@@ -36,8 +36,14 @@
 		"@vercel/analytics": "^0.1.8",
 		"@vercel/kv": "^0.2.2",
 		"ai": "^2.2.26",
+		"bits-ui": "^0.9.8",
+		"clsx": "^2.0.0",
 		"esbuild": "^0.18.11",
 		"eventsource-parser": "^0.1.0",
-		"svelte-scrollto": "^0.2.0"
+		"openai": "^4.20.1",
+		"radix-icons-svelte": "^1.2.1",
+		"svelte-scrollto": "^0.2.0",
+		"tailwind-merge": "^2.0.0",
+		"tailwind-variants": "^0.1.18"
 	}
 }
