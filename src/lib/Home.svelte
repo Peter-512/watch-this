@@ -4,10 +4,10 @@
 	>
 		Get curated show and movie recommendations with Open AI
 	</div>
-	<div class="flex flex-wrap items-center mr-auto">
+	<div class="flex flex-wrap items-center md:space-x-3">
 		<a
 			href="recommendations"
-			class="w-full md:w-auto text-center bg-pink-600 hover:bg-pink-700 mb-4 flex-none rounded-full text-white font-medium py-3 px-6 mr-8"
+			class="w-full md:w-auto text-center bg-white/20 hover:bg-white/50 mb-4 flex-none rounded-full text-white font-medium py-3 px-6"
 		>
 			Get recommendations
 		</a>
@@ -17,6 +17,12 @@
 			class="w-full md:w-auto text-center bg-white/20 hover:bg-white/50 mb-4 flex-none rounded-full text-white font-medium py-3 px-6"
 		>
 			Learn how it's built
+		</a>
+		<a
+			class="w-full md:w-auto text-center bg-pink-600 hover:bg-pink-700 mb-4 flex-none rounded-full text-white font-medium py-3 px-6"
+			href="chat"
+		>
+			Chat with me!
 		</a>
 	</div>
 </div>
