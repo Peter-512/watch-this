@@ -1,4 +1,6 @@
 <script lang="ts">
+	import BotImage from '$lib/images/bot.png';
+	import UserImage from '$lib/images/user.png';
 	import { useChat } from 'ai/svelte';
 	import { Avatar, AvatarImage, AvatarFallback } from '$lib/components/ui/avatar';
 
@@ -20,7 +22,7 @@
 			{#if message.role === 'assistant'}
 				<div class="flex items-end space-x-2">
 					<Avatar>
-						<AvatarImage src="/placeholder-bot.jpg" alt="Bot Avatar" />
+						<AvatarImage src={BotImage} alt="Bot Avatar" />
 						<AvatarFallback>B</AvatarFallback>
 					</Avatar>
 					<div class="p-3 rounded-lg bg-gray-200 dark:bg-gray-800 text-black">
@@ -34,7 +36,7 @@
 						{message.content}
 					</div>
 					<Avatar>
-						<AvatarImage src="/placeholder-user.jpg" alt="User Avatar" />
+						<AvatarImage src={UserImage} alt="User Avatar" />
 						<AvatarFallback>U</AvatarFallback>
 					</Avatar>
 				</div>
