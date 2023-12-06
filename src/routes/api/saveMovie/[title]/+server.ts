@@ -3,6 +3,7 @@ import { OMDB_API_KEY } from '$env/static/private';
 import { supabase } from '$lib/supabase';
 import { error, json } from '@sveltejs/kit';
 
+
 interface Movie {
 	Title: string;
 	Year: string;
@@ -45,8 +46,8 @@ export const POST: RequestHandler = async ({ params, fetch }) => {
 		.from('movies')
 		.select('imdbID')
 		.eq('imdbID', imdbID);
-	if (e1) throw error(404, 'Not found');
-
+	// if (e1) throw error(404, 'Not found');
+	//
 	if (movieData?.length > 0) return json({ error: false, message: 'Movie already in db' });
 
 	const newMovie: Partial<Movie> = {
@@ -63,11 +64,30 @@ export const POST: RequestHandler = async ({ params, fetch }) => {
 	// TODO: create embeddings from the newMovie
 	// save those embeddings with the imdbID as PK
 
+	await generateEmbeddings()
+
+	async function generateEmbeddings() {
+
+
+		console.log("hello prompt engineer!")
+
+		console.log(params)
+
+
+
+
+
+	}
+
+
+
+
+
 	const { error: e2 } = await supabase.from('movies').insert({
 		imdbID
 	});
 
-	if (e2) throw error(500, 'Saving to db failed');
+	// if (e2) throw error(500, 'Saving to db failed');
 
 	return json({ error: false, message: 'Saving to db successful' });
 };
