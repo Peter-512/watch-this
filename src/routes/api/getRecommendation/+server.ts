@@ -1,8 +1,14 @@
 import { createParser } from 'eventsource-parser';
 import { OPENAI_API_KEY } from '$env/static/private';
 import { kv } from '@vercel/kv';
+import OpenAI from "openai";
+import type {Stream} from "openai/streaming";
 
 const key = OPENAI_API_KEY;
+
+const openai = new OpenAI({
+	apiKey: OPENAI_API_KEY || ''
+});
 
 // Object to store the number of requests made by each user and their last request timestamp
 interface UserRequestData {
@@ -81,7 +87,7 @@ interface OpenAIStreamPayload {
 	n: number;
 }
 
-async function OpenAIStream(payload: OpenAIStreamPayload) {
+async function OpenAIStream(payload: Stream<OpenAI.Chat.ChatCompletionChunk>) {
 	const encoder = new TextEncoder();
 	const decoder = new TextDecoder();
 
@@ -141,18 +147,42 @@ export async function POST({ request }: { request: any }) {
 	// if (rateLimitResult) {
 	// 	return rateLimitResult;
 	// }
-	const { searched } = await request.json();
-	const payload = {
-		model: 'text-davinci-003',
-		prompt: searched,
+	const { cinemaType, selectedCategories, specificDescriptors } = await request.json();
+	const response = await openai.chat.completions.create({
+		model: 'gpt-3.5-turbo',
+		stream: true,
 		temperature: 0.7,
 		max_tokens: 2048,
 		top_p: 1.0,
 		frequency_penalty: 0.0,
-		stream: true,
 		presence_penalty: 0.0,
-		n: 1
-	};
-	const stream = await OpenAIStream(payload);
+		n: 1,
+		messages: [
+			{
+				role: "system",
+				content: `You are knowledgeable about recommendations for ${cinemaType}.`
+			},
+			{
+				role: "system",
+				content: `Give me a list of 5 ${cinemaType} recommendations ${
+					selectedCategories ? `that fit all of the following categories: ${selectedCategories}` : ''
+				}. ${
+					specificDescriptors
+						? `Make sure it fits the following description as well: ${specificDescriptors}.`
+						: ''
+				} ${
+					selectedCategories || specificDescriptors
+						? `If you do not have 5 recommendations that fit these criteria perfectly, do your best to suggest other ${cinemaType}'s that I might like.`
+						: ''
+				} Please return this response as a numbered list with the ${cinemaType}'s title, followed by a colon, and then a brief description of the ${cinemaType}. There should be a line of whitespace between each item in the list.`
+			},
+			{
+				role: "user",
+				content: `Im looking for some recommendations for ${cinemaType}. I like ${selectedCategories} 
+				maybe something that fits more this description: ${specificDescriptors}`
+			}
+		]
+	});
+	const stream = await OpenAIStream(response);
 	return new Response(stream);
 }
