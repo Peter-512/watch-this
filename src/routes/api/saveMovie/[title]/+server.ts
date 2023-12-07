@@ -1,11 +1,7 @@
 import type { RequestHandler } from './$types';
 import { OMDB_API_KEY,OPENAI_API_KEY } from '$env/static/private';
-
 import { supabase } from '$lib/supabase';
 import { error, json } from '@sveltejs/kit';
-// import { OpenAIApi, Configuration } from 'openai';
-import Configuration from "openai"
-import OpenAIApi from 'openai';
 import { readFile } from 'fs/promises';
 
 
@@ -45,7 +41,7 @@ interface Rating {
 }
 
 export const POST: RequestHandler = async ({ params, fetch }) => {
-	// movies is movie titles separated by newline
+	// movies are movie titles separated by newline
 	const movies = await readFile('movies.txt', 'utf8');
 
 	const movieTitles = movies.split('\n');
@@ -106,7 +102,6 @@ export const POST: RequestHandler = async ({ params, fetch }) => {
 
 	return json({ responses });
 };
-
 // const newMovie: Partial<Movie> = {
 // 	Actors: movie.Actors,
 // 	Country: movie.Country,
@@ -125,7 +120,6 @@ async function fetchMovieDetails(movieName:string) {
 	const response = await fetch(`http://www.omdbapi.com/?t=${encodeURIComponent(movieName)}&apikey=${OMDB_API_KEY}`);
 	const movieData = await response.json();
 
-
 	if (movieData.Response === 'False') {
 		throw new Error(movieData.Error);
 	}
@@ -140,7 +134,6 @@ async function generateEmbeddingsForMovies(moviePlots:string[]) {
 
 	//send multiple movie plots in one api call, receive a array of embeddings
 	try {
-
 		const response = await fetch('https://api.openai.com/v1/embeddings', {
 			method: 'POST',
 			headers: {
@@ -152,7 +145,6 @@ async function generateEmbeddingsForMovies(moviePlots:string[]) {
 				input: moviePlots
 			})
 		});
-
 
 		if (!response.ok) {
 			console.error("OpenAI API Error:", await response.text());
