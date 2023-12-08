@@ -16,8 +16,6 @@
 	<meta name="chat with a movie expert" content="Movie ChatBot" />
 </svelte:head>
 
-<Button on:click={() => fetch(`api/saveMovie/die-hard`, {method: 'POST'})}>test</Button>
-
 <AlertDialog.Root>
 	<AlertDialog.Trigger class="fixed top-4 left-4"><Button>Upload</Button></AlertDialog.Trigger>
 	<AlertDialog.Content>
