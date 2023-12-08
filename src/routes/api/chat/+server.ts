@@ -1,14 +1,7 @@
-import OpenAI from 'openai';
 import { OpenAIStream, StreamingTextResponse } from 'ai';
-
-import { OPENAI_API_KEY } from '$env/static/private';
+import { openai } from '$lib/server/openai';
 
 import type { RequestHandler } from './$types';
-
-// Create an OpenAI API client
-const openai = new OpenAI({
-	apiKey: OPENAI_API_KEY || ''
-});
 
 export const POST = (async ({ request }) => {
 	// Extract the `prompt` from the body of the request

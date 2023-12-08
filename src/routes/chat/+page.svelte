@@ -3,6 +3,10 @@
 	import UserImage from '$lib/images/user.png';
 	import { useChat } from 'ai/svelte';
 	import { Avatar, AvatarImage, AvatarFallback } from '$lib/components/ui/avatar';
+	import * as AlertDialog from '$lib/components/ui/alert-dialog';
+	import { Button } from '$lib/components/ui/button';
+	import { Input } from '$lib/components/ui/input';
+	import { enhance } from '$app/forms';
 
 	const { input, handleSubmit, messages } = useChat();
 </script>
@@ -11,6 +15,35 @@
 	<title>Chat</title>
 	<meta name="chat with a movie expert" content="Movie ChatBot" />
 </svelte:head>
+
+<AlertDialog.Root>
+	<AlertDialog.Trigger class="fixed top-4 left-4"><Button>Upload</Button></AlertDialog.Trigger>
+	<AlertDialog.Content>
+		<AlertDialog.Header>
+			<AlertDialog.Title>Upload a file with movies</AlertDialog.Title>
+			<AlertDialog.Description class="flex flex-col space-y-2">
+				The file should be a .txt file with a movie title on each line. Remember to be accurate with
+				your movie titles.
+				<br />
+				E.g.
+				<pre>
+Avengers: Endgame
+Avengers: Infinity War
+Avengers: Age of Ultron
+Avengers
+...
+				</pre>
+				<form method="POST" class="flex gap-2" enctype="multipart/form-data" use:enhance>
+					<Input accept=".txt" name="file" type="file" />
+					<AlertDialog.Action type="submit">Upload</AlertDialog.Action>
+				</form>
+			</AlertDialog.Description>
+		</AlertDialog.Header>
+		<AlertDialog.Footer>
+			<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+		</AlertDialog.Footer>
+	</AlertDialog.Content>
+</AlertDialog.Root>
 
 <!--
 // v0 by Vercel.
@@ -25,14 +58,14 @@
 						<AvatarImage src={BotImage} alt="Bot Avatar" />
 						<AvatarFallback>B</AvatarFallback>
 					</Avatar>
-					<div class="p-3 rounded-lg bg-gray-200 dark:bg-gray-800 text-black">
+					<div class="p-3 rounded-lg bg-gray-200 dark:bg-gray-800">
 						{message.content}
 					</div>
 				</div>
 			{/if}
 			{#if message.role === 'user'}
 				<div class="flex items-end justify-end space-x-2">
-					<div class="p-3 rounded-lg bg-blue-500 text-white dark:bg-blue-400">
+					<div class="p-3 rounded-lg bg-blue-500 dark:bg-blue-400">
 						{message.content}
 					</div>
 					<Avatar>
@@ -46,7 +79,7 @@
 	<form on:submit={handleSubmit} class="flex items-center p-4 space-x-4 border-t">
 		<input
 			bind:value={$input}
-			class="flex h-10 text-black w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+			class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 			placeholder="Type your message..."
 		/><button
 			type="submit"
