@@ -29,6 +29,17 @@ export interface Database {
 			[_ in never]: never;
 		};
 		Functions: {
+			find_closest_movies: {
+				Args: {
+					embedding: number[];
+					match_threshold: number;
+					match_count: number;
+				};
+				Returns: {
+					content: Json;
+					similarity: number;
+				}[];
+			};
 			hnswhandler: {
 				Args: {
 					'': unknown;
