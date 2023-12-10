@@ -110,12 +110,12 @@
 		</div>
 		<div class="md:pb-20 max-w-4xl mx-auto w-full">
 			{#if loading && !searchResponse && !recommendations}
-				<div class="fontsemibold text-lg text-center mt-8 mb-4">
+				<div class="font-semibold text-lg text-center mt-8 mb-4">
 					Please be patient as I think. Good things are coming 😎.
 				</div>
 			{/if}
 			{#if error}
-				<div class="fontsemibold text-lg text-center mt-8 text-red-500">
+				<div class="font-semibold text-lg text-center mt-8 text-red-500">
 					Whoops! {error}
 				</div>
 			{/if}

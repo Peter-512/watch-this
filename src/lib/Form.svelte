@@ -1,22 +1,10 @@
-<script>
+<script lang="ts">
 	import LoadingIndicator from './Loading.svelte';
 
-	/**
-	 * @type string
-	 */
-	export let cinemaType;
-	/**
-	 * @type Array<string>
-	 */
-	export let selectedCategories;
-	/**
-	 * @type string
-	 */
-	export let specificDescriptors;
-	/**
-	 * @type Boolean
-	 */
-	export let loading;
+	export let cinemaType: string;
+	export let selectedCategories: string[];
+	export let specificDescriptors: string;
+	export let loading: boolean;
 
 	const categoryTypes = [
 		'Action',
