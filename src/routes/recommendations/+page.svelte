@@ -1,27 +1,15 @@
-<script>
+<script lang="ts">
 	import * as animateScroll from 'svelte-scrollto';
 	import { fade } from 'svelte/transition';
 	import Form from '$lib/Form.svelte';
-	import Footer from '$lib/Footer.svelte';
-	import Header from '$lib/Header.svelte';
 	import RecommendationCard from '$lib/RecommendationCard.svelte';
 	import LoadingCard from '$lib/LoadingCard.svelte';
 	let loading = false;
 	let error = '';
 	let endStream = false;
 
-	/**
-	 * @type {string}
-	 */
 	let searchResponse = '';
-	/**
-	 * @type {Array<string | {title: string, description: string}>}
-	 */
-	let recommendations = [];
-
-	/**
-	 * @param {string} target
-	 */
+	let recommendations: Array<string | { title: string; description: string }> = [];
 
 	$: {
 		if (searchResponse) {
@@ -43,14 +31,8 @@
 		}
 	}
 
-	/**
-	 * @type {string}
-	 */
 	let cinemaType = 'tv show';
-	/**
-	 * @type {Array<string>}
-	 */
-	let selectedCategories = [];
+	let selectedCategories: string[] = [];
 	let specificDescriptors = '';
 
 	async function search() {
@@ -77,6 +59,7 @@
 				const reader = data.getReader();
 				const decoder = new TextDecoder();
 
+				// eslint-disable-next-line no-constant-condition
 				while (true) {
 					const { value, done } = await reader.read();
 					const chunkValue = decoder.decode(value);
@@ -133,7 +116,7 @@
 			{/if}
 			{#if error}
 				<div class="fontsemibold text-lg text-center mt-8 text-red-500">
-					Woops! {error}
+					Whoops! {error}
 				</div>
 			{/if}
 			{#if recommendations}

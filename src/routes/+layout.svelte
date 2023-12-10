@@ -21,3 +21,9 @@
 		</div>
 	</div>
 </div>
+
+<style>
+	:global(body) {
+		font-family: 'Inter', sans-serif;
+	}
+</style>
