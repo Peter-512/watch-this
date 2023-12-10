@@ -4,9 +4,10 @@
 	import Form from '$lib/Form.svelte';
 	import RecommendationCard from '$lib/RecommendationCard.svelte';
 	import LoadingCard from '$lib/LoadingCard.svelte';
-	let loading = false;
-	let error = '';
+
 	let endStream = false;
+	let isLoading = false;
+	let error = '';
 
 	let searchResponse = '';
 	let recommendations: Array<string | { title: string; description: string }> = [];
@@ -36,11 +37,12 @@
 	let specificDescriptors = '';
 
 	async function search() {
-		if (loading) return;
+		if (isLoading) return;
+
 		recommendations = [];
 		searchResponse = '';
 		endStream = false;
-		loading = true;
+		isLoading = true;
 		const response = await fetch('/api/getRecommendation', {
 			method: 'POST',
 			body: JSON.stringify({ cinemaType, selectedCategories }),
@@ -77,7 +79,7 @@
 		} else {
 			error = await response.text();
 		}
-		loading = false;
+		isLoading = false;
 	}
 	function clearForm() {
 		recommendations = [];
@@ -93,9 +95,9 @@
 	<div in:fade class="w-full max-w-4xl mx-auto">
 		<div class="w-full mb-8">
 			<Form
+				bind:isLoading
 				bind:cinemaType
 				bind:selectedCategories
-				bind:loading
 				bind:specificDescriptors
 				on:click={search}
 			/>
@@ -109,7 +111,7 @@
 			{/if}
 		</div>
 		<div class="md:pb-20 max-w-4xl mx-auto w-full">
-			{#if loading && !searchResponse && !recommendations}
+			{#if isLoading && !searchResponse && !recommendations}
 				<div class="font-semibold text-lg text-center mt-8 mb-4">
 					Please be patient as I think. Good things are coming 😎.
 				</div>

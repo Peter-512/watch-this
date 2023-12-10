@@ -81,21 +81,17 @@ export const POST: RequestHandler = async ({ request }) => {
 
 	const { cinemaType, selectedCategories, specificDescriptors } = await request.json();
 
-	const prompt = `You are knowledgeable about recommendations for ${cinemaType}. 
-	Give me a list of 5 ${cinemaType} recommendations 
-	${selectedCategories ? 'that fit all of the following categories: ' + selectedCategories : ''}. ${
+	const prompt = `Give me a list of 5 ${cinemaType} recommendations 
+	${selectedCategories ? `that fit all of the following categories: ${selectedCategories}` : ''}. ${
 		specificDescriptors
-			? 'Make sure it fits the following description as well: ' + specificDescriptors + '.'
+			? `Make sure it fits the following description as well: ${specificDescriptors}.`
 			: ''
 	} ${
 		selectedCategories || specificDescriptors
-			? 'If you do not have 5 recommendations that fit these criteria perfectly, do your best to suggest other ' +
-			  cinemaType +
-			  "'s that I might like."
+			? `If you do not have 5 recommendations that fit these criteria perfectly, do your best to suggest other ${cinemaType}'s that I might like."`
 			: ''
 	} Please return this response as a numbered list with the ${cinemaType}'s title, followed by a colon, and then a brief description of the ${cinemaType}. 
-	There should be a line of whitespace between each item in the list.Im looking for some recommendations for ${cinemaType}. 
-	I like ${selectedCategories} maybe something that fits more this description: ${specificDescriptors}`;
+	There should be a line of whitespace between each item in the list.`;
 
 	const response = await openai.completions.create({
 		model: 'gpt-3.5-turbo-instruct',

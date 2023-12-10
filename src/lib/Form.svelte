@@ -4,7 +4,7 @@
 	export let cinemaType: string;
 	export let selectedCategories: string[];
 	export let specificDescriptors: string;
-	export let loading: boolean;
+	export let isLoading: boolean;
 
 	const categoryTypes = [
 		'Action',
@@ -122,12 +122,12 @@
 			<button
 				on:click
 				class={`${
-					loading
+					isLoading
 						? 'bg-pink-400/50'
 						: 'bg-pink-600 hover:bg-gradient-to-r from-pink-700 via-pink-600 to-pink-700 '
 				} mt-4 w-full h-10 text-white font-bold p-3 rounded-full flex items-center justify-center`}
 			>
-				{#if loading}
+				{#if isLoading}
 					<LoadingIndicator />
 				{:else}
 					<p>Curate My List</p>
