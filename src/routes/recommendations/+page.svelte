@@ -92,7 +92,7 @@
 </script>
 
 <div>
-	<div in:fade class="w-full max-w-4xl mx-auto">
+	<div in:fade class="mx-auto">
 		<div class="w-full mb-8">
 			<Form
 				bind:isLoading

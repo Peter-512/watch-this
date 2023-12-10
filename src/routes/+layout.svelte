@@ -14,7 +14,7 @@
 		class="flex flex-col items-center justify-center min-h-screen w-full h-full bg-gradient-to-br from-slate-900/80 to-black/90"
 		class:backdrop-blur-md={$page.route.id !== '/'}
 	>
-		<div class="min-h-screen m-5 flex flex-col justify-between">
+		<div class="min-h-screen m-32 flex flex-col justify-between">
 			<Header />
 			<slot />
 			<Footer />
