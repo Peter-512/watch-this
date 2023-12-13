@@ -2,13 +2,29 @@
 	import BotImage from '$lib/images/bot.png';
 	import UserImage from '$lib/images/user.png';
 	import { useChat } from 'ai/svelte';
+	import type { ActionData } from './$types';
 	import { Avatar, AvatarImage, AvatarFallback } from '$lib/components/ui/avatar';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { enhance } from '$app/forms';
+	import { Separator } from '$lib/components/ui/separator';
+	import { addToast } from '$lib/toastStore';
 
 	const { input, handleSubmit, messages } = useChat();
+	export let form: ActionData;
+
+	$: {
+		if (form && form.error) {
+			addToast({ title: 'Error', message: form.message, type: 'destructive' });
+		}
+
+		if (form && form.errors) {
+			for (const error of form.errors) {
+				addToast({ title: 'Error', message: error.message, type: 'destructive' });
+			}
+		}
+	}
 </script>
 
 <svelte:head>
@@ -33,9 +49,22 @@ Avengers: Age of Ultron
 Avengers
 ...
 				</pre>
-				<form method="POST" class="flex gap-2" enctype="multipart/form-data" use:enhance>
+				<form
+					action="?/file-upload"
+					method="POST"
+					class="flex gap-2"
+					enctype="multipart/form-data"
+					use:enhance
+				>
 					<Input accept=".txt" name="file" type="file" />
-					<AlertDialog.Action type="submit">Upload</AlertDialog.Action>
+					<AlertDialog.Action type="submit">Upload movies</AlertDialog.Action>
+				</form>
+				<div class="flex items-center gap-2">
+					<Separator /> or <Separator />
+				</div>
+				<form action="?/text-input" method="POST" class="flex gap-2" use:enhance>
+					<Input name="movies" placeholder="Add comma-separated movies" type="text" />
+					<AlertDialog.Action type="submit">Add movies</AlertDialog.Action>
 				</form>
 			</AlertDialog.Description>
 		</AlertDialog.Header>
@@ -58,8 +87,11 @@ Avengers
 						<AvatarImage src={BotImage} alt="Bot Avatar" />
 						<AvatarFallback>B</AvatarFallback>
 					</Avatar>
-					<div class="p-3 rounded-lg bg-gray-200 dark:bg-gray-800">
-						{message.content}
+					<div
+						class="p-3 rounded-lg bg-gray-200 dark:bg-gray-800 whitespace-break-spaces bot-messages"
+					>
+						<!--				eslint-disable-next-line		-->
+						{@html message.content}
 					</div>
 				</div>
 			{/if}
@@ -88,3 +120,10 @@ Avengers
 		>
 	</form>
 </div>
+
+<style>
+	:global(.youtube-trailer) {
+		color: #3894ea;
+		text-decoration: underline;
+	}
+</style>
