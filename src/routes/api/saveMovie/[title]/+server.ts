@@ -3,6 +3,7 @@ import { OMDB_API_KEY } from '$env/static/private';
 import { supabase } from '$lib/supabase';
 import { json } from '@sveltejs/kit';
 import { openai } from '$lib/server/openai';
+import type { Json } from '$lib/types/supabase';
 
 type Movie =
 	| {
@@ -71,17 +72,17 @@ export const POST: RequestHandler = async ({ fetch, params }) => {
 
 	if (e1) {
 		console.error(e1);
-		return json({ title, success: false, message: 'Movie already in db' });
+		return json({ title, success: false, message: 'database error' });
 	}
 	if (movieData?.length > 0) {
-		return json({ title, success: false, message: 'database error' });
+		return json({ title, success: false, message: 'Movie already in db' });
 	}
 
 	const [embeddings, tokenCount] = await generateEmbeddingsForMovies(movieDetails);
 
 	const { error: e2 } = await supabase.from('movies').insert({
 		imdbid: movieDetails.imdbID,
-		content: JSON.stringify(movieDetails),
+		content: movieDetails as unknown as Json,
 		token_count: tokenCount,
 		embedding: embeddings[0]
 	});
