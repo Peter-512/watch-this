@@ -5,6 +5,7 @@
 	import Header from '$lib/Header.svelte';
 	import Footer from '$lib/Footer.svelte';
 	import { page } from '$app/stores';
+	import Toasts from '$lib/Toasts.svelte';
 
 	inject({ mode: dev ? 'development' : 'production' });
 </script>
@@ -17,6 +18,7 @@
 		<div class="min-h-screen m-32 flex flex-col justify-between">
 			<Header />
 			<slot />
+			<Toasts />
 			<Footer />
 		</div>
 	</div>
