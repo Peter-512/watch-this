@@ -45,6 +45,8 @@
 		"clsx": "^2.0.0",
 		"esbuild": "^0.18.11",
 		"eventsource-parser": "^0.1.0",
+		"googleapis": "^129.0.0",
+		"lucide-svelte": "^0.294.0",
 		"openai": "^4.20.1",
 		"radix-icons-svelte": "^1.2.1",
 		"svelte-scrollto": "^0.2.0",
