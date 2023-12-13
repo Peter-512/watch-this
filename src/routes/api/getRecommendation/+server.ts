@@ -1,8 +1,8 @@
-import { createParser } from 'eventsource-parser';
-import { OPENAI_API_KEY } from '$env/static/private';
 import { kv } from '@vercel/kv';
-
-const key = OPENAI_API_KEY;
+import { openai } from '$lib/server/openai';
+import { dev } from '$app/environment';
+import { OpenAIStream, StreamingTextResponse } from 'ai';
+import type { RequestHandler } from '@sveltejs/kit';
 
 // Object to store the number of requests made by each user and their last request timestamp
 interface UserRequestData {
@@ -32,7 +32,8 @@ async function updateUserRequestData(userIP: string, data: UserRequestData) {
 
 // Middleware function to enforce rate limits
 async function rateLimitMiddleware(request: Request) {
-	const userIP = request.headers.get('x-forwarded-for') || request.headers.get('cf-connecting-ip');
+	const userIP =
+		request.headers.get('x-forwarded-for') || (request.headers.get('cf-connecting-ip') as string);
 	const userRequests = await getUserRequestData(userIP);
 
 	// Check if the user has made requests before
@@ -69,90 +70,40 @@ async function rateLimitMiddleware(request: Request) {
 	return null;
 }
 
-interface OpenAIStreamPayload {
-	model: string;
-	prompt: string;
-	temperature: number;
-	top_p: number;
-	frequency_penalty: number;
-	presence_penalty: number;
-	max_tokens: number;
-	stream: boolean;
-	n: number;
-}
-
-async function OpenAIStream(payload: OpenAIStreamPayload) {
-	const encoder = new TextEncoder();
-	const decoder = new TextDecoder();
-
-	let counter = 0;
-
-	const res = await fetch('https://api.openai.com/v1/completions', {
-		headers: {
-			'Content-Type': 'application/json',
-			Authorization: `Bearer ${key}`
-		},
-		method: 'POST',
-		body: JSON.stringify(payload)
-	});
-
-	const stream = new ReadableStream({
-		async start(controller) {
-			function onParse(event: any) {
-				if (event.type === 'event') {
-					const data = event.data;
-					// https://beta.openai.com/docs/api-reference/completions/create#completions/create-stream
-					if (data === '[DONE]') {
-						controller.close();
-						return;
-					}
-					try {
-						const json = JSON.parse(data);
-						const text = json.choices[0].text;
-
-						if (counter < 2 && (text.match(/\n/) || []).length) {
-							// this is a prefix character (i.e., "\n\n"), do nothing
-							return;
-						}
-						const queue = encoder.encode(text);
-						controller.enqueue(queue);
-						counter++;
-					} catch (e) {
-						controller.error(e);
-					}
-				}
-			}
-
-			// stream response (SSE) from OpenAI may be fragmented into multiple chunks
-			// this ensures we properly read chunks and invoke an event for each SSE event stream
-			const parser = createParser(onParse);
-			// https://web.dev/streams/#asynchronous-iteration
-			for await (const chunk of res.body as any) {
-				parser.feed(decoder.decode(chunk));
-			}
-		}
-	});
-	return stream;
-}
-
-export async function POST({ request }: { request: any }) {
+export const POST: RequestHandler = async ({ request }) => {
 	// Apply rate limit middleware
-	// const rateLimitResult = await rateLimitMiddleware(request);
-	// if (rateLimitResult) {
-	// 	return rateLimitResult;
-	// }
-	const { searched } = await request.json();
-	const payload = {
-		model: 'text-davinci-003',
-		prompt: searched,
+	if (!dev) {
+		const rateLimitResult = await rateLimitMiddleware(request);
+		if (rateLimitResult) {
+			return rateLimitResult;
+		}
+	}
+
+	const { cinemaType, selectedCategories, specificDescriptors } = await request.json();
+
+	const prompt = `Give me a list of 5 ${cinemaType} recommendations 
+	${selectedCategories ? `that fit all of the following categories: ${selectedCategories}` : ''}. ${
+		specificDescriptors
+			? `Make sure it fits the following description as well: ${specificDescriptors}.`
+			: ''
+	} ${
+		selectedCategories || specificDescriptors
+			? `If you do not have 5 recommendations that fit these criteria perfectly, do your best to suggest other ${cinemaType}'s that I might like."`
+			: ''
+	} Please return this response as a numbered list with the ${cinemaType}'s title, followed by a colon, and then a brief description of the ${cinemaType}. 
+	There should be a line of whitespace between each item in the list.`;
+
+	const response = await openai.completions.create({
+		model: 'gpt-3.5-turbo-instruct',
+		stream: true,
 		temperature: 0.7,
 		max_tokens: 2048,
 		top_p: 1.0,
 		frequency_penalty: 0.0,
-		stream: true,
 		presence_penalty: 0.0,
-		n: 1
-	};
-	const stream = await OpenAIStream(payload);
-	return new Response(stream);
-}
+		n: 1,
+		prompt
+	});
+	const stream = OpenAIStream(response);
+	return new StreamingTextResponse(stream);
+};

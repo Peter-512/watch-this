@@ -1,27 +1,16 @@
-<script>
+<script lang="ts">
 	import * as animateScroll from 'svelte-scrollto';
 	import { fade } from 'svelte/transition';
 	import Form from '$lib/Form.svelte';
-	import Footer from '$lib/Footer.svelte';
-	import Header from '$lib/Header.svelte';
 	import RecommendationCard from '$lib/RecommendationCard.svelte';
 	import LoadingCard from '$lib/LoadingCard.svelte';
-	let loading = false;
-	let error = '';
+
 	let endStream = false;
+	let isLoading = false;
+	let error = '';
 
-	/**
-	 * @type {string}
-	 */
 	let searchResponse = '';
-	/**
-	 * @type {Array<string | {title: string, description: string}>}
-	 */
-	let recommendations = [];
-
-	/**
-	 * @param {string} target
-	 */
+	let recommendations: Array<string | { title: string; description: string }> = [];
 
 	$: {
 		if (searchResponse) {
@@ -43,37 +32,20 @@
 		}
 	}
 
-	/**
-	 * @type {string}
-	 */
 	let cinemaType = 'tv show';
-	/**
-	 * @type {Array<string>}
-	 */
-	let selectedCategories = [];
+	let selectedCategories: string[] = [];
 	let specificDescriptors = '';
 
 	async function search() {
-		if (loading) return;
+		if (isLoading) return;
+
 		recommendations = [];
 		searchResponse = '';
 		endStream = false;
-		loading = true;
-
-		let fullSearchCriteria = `Give me a list of 5 ${cinemaType} recommendations ${
-			selectedCategories ? `that fit all of the following categories: ${selectedCategories}` : ''
-		}. ${
-			specificDescriptors
-				? `Make sure it fits the following description as well: ${specificDescriptors}.`
-				: ''
-		} ${
-			selectedCategories || specificDescriptors
-				? `If you do not have 5 recommendations that fit these criteria perfectly, do your best to suggest other ${cinemaType}'s that I might like.`
-				: ''
-		} Please return this response as a numbered list with the ${cinemaType}'s title, followed by a colon, and then a brief description of the ${cinemaType}. There should be a line of whitespace between each item in the list.`;
+		isLoading = true;
 		const response = await fetch('/api/getRecommendation', {
 			method: 'POST',
-			body: JSON.stringify({ searched: fullSearchCriteria }),
+			body: JSON.stringify({ cinemaType, selectedCategories }),
 			headers: {
 				'content-type': 'application/json'
 			}
@@ -89,6 +61,7 @@
 				const reader = data.getReader();
 				const decoder = new TextDecoder();
 
+				// eslint-disable-next-line no-constant-condition
 				while (true) {
 					const { value, done } = await reader.read();
 					const chunkValue = decoder.decode(value);
@@ -106,7 +79,7 @@
 		} else {
 			error = await response.text();
 		}
-		loading = false;
+		isLoading = false;
 	}
 	function clearForm() {
 		recommendations = [];
@@ -119,12 +92,12 @@
 </script>
 
 <div>
-	<div in:fade class="w-full max-w-4xl mx-auto">
+	<div in:fade class="mx-auto">
 		<div class="w-full mb-8">
 			<Form
+				bind:isLoading
 				bind:cinemaType
 				bind:selectedCategories
-				bind:loading
 				bind:specificDescriptors
 				on:click={search}
 			/>
@@ -138,14 +111,14 @@
 			{/if}
 		</div>
 		<div class="md:pb-20 max-w-4xl mx-auto w-full">
-			{#if loading && !searchResponse && !recommendations}
-				<div class="fontsemibold text-lg text-center mt-8 mb-4">
+			{#if isLoading && !searchResponse && !recommendations}
+				<div class="font-semibold text-lg text-center mt-8 mb-4">
 					Please be patient as I think. Good things are coming 😎.
 				</div>
 			{/if}
 			{#if error}
-				<div class="fontsemibold text-lg text-center mt-8 text-red-500">
-					Woops! {error}
+				<div class="font-semibold text-lg text-center mt-8 text-red-500">
+					Whoops! {error}
 				</div>
 			{/if}
 			{#if recommendations}
