@@ -77,46 +77,77 @@ export const POST = (async ({ request }) => {
 				type: ['video'],
 				maxResults: 1
 			});
-			console.log(
-				content.Title,
-				`https://www.youtube.com/watch?v=${
-					data.items && data.items[0] && data.items[0].id ? data.items[0].id.videoId : ''
-				}`
-			);
+
+			const youtubeLink =
+				data.items && data.items[0] && data.items[0].id
+					? `https://www.youtube.com/watch?v=${data.items[0].id.videoId}`
+					: 'N/A';
+
+			console.log(content.Title, youtubeLink);
 			return {
 				...content,
-				'youtube-link':
-					data.items && data.items[0] && data.items[0].id
-						? `https://www.youtube.com/watch?v=${data.items[0].id.videoId}`
-						: 'N/A'
+				youtubeLink
 			};
 		})
 	);
 
-	// const videoId = data.items && data.items[0] && data.items[0].id ? data.items[0].id.videoId : "";
+	const fullDataString = fullData
+		.map((movie) => {
+			return `${movie.Title} (${movie.Year})
+		Plot: ${movie.Plot}
+		YouTube Trailer: ${movie.youtubeLink}
+		`;
+		})
+		.join('\n"""\n');
 
-	const prompt = `You are a very enthusiastic movie specialist who loves to recommend people the right movies based on their mood. 
-Given the following json objects (which represent the movies the user owns), answer the users question below or make a recommendation if you think it's appropriate.
-If you are asked to format a link to a YouTube trailer, always use HTML tags (<a href='[link]' >[text]</a>) and never markdown.
-Never refer to the json objects directly, but rather use the information in them to answer the question. 
-Provide the trailers to YouTube in a nicely formatted call to action, wrapped in a HTML (never use markdown to format the link) anchor tags and put a class of "youtube-trailer" on the anchor tags.
+	const systemPrompt = `You are a very enthusiastic movie specialist who loves to recommend people the right movies based on their mood and the movies they own.
+Use the provided data delimited by triple quotes (""") to recommend a movie and alternatives.
+Provide the trailers to YouTube in a nicely formatted call to action, wrapped in HTML anchor tags that open in a new tab (like such: <a target="_blank" href="[link]" >[text]</a>) (never use markdown to format the link) and put a class of "youtube-trailer" on the anchor tags.
 Also give a reason for your answer.
-Finally, give a short list of alternative movies that the user owns. Never recommend a movie that the user doesn't own. 
 If there are no alternatives, don't give alternatives.
-Never recommend a movie that the user doesn't own which are listed below.
-Context:
-${JSON.stringify(fullData)}
+If there is no data, say "You don't own any movies that fit your request.".
+Example:
+"""
+Movie: The Matrix (1999)
+Plot: A computer hacker learns from mysterious rebels about the true nature of his reality and his role in the war against its controllers.
+YouTube Trailer: <a target="_blank" href="https://www.youtube.com/watch?v=m8e-FF8MsqU" class="youtube-trailer">The Matrix (1999) Trailer</a>
+"""
+User request/question/preference:
+"""
+I want to watch a movie with a lot of action.
+"""
+Answer:
+"""
+Based on your request, I recommend The Matrix (1999) because it has a lot of action.
+It is about a computer hacker who learns from mysterious rebels about the true nature of his reality and his role in the war against its controllers.
+Here is the trailer: <a target="_blank" href="https://www.youtube.com/watch?v=m8e-FF8MsqU" class="youtube-trailer">The Matrix (1999) Trailer</a>
+"""
+`;
 
-Question: """
+	const userPrompt = `
+Movies I own:
+"""
+${fullDataString}
+"""
+
+User request/question/preference:
+"""
 ${messages[messages.length - 1].content}
 """`;
+
+	messages.pop();
+	messages.push({
+		content: userPrompt,
+		role: 'user'
+	});
 
 	const completionResponse = await openai.chat.completions.create({
 		model: 'gpt-3.5-turbo',
 		stream: true,
+		temperature: 0.3,
 		messages: [
 			{
-				content: prompt,
+				content: systemPrompt,
 				role: 'system'
 			},
 			...messages.map((message: any) => ({
