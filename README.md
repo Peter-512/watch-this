@@ -1,19 +1,41 @@
 # How it works
 
-This project uses the OpenAI GPT-3 API (specifically, text-davinci-003) and Vercel Edge functions with streaming. It generates 5 cinema recommendations based on the form and user input, sends it to the GPT-3 API via a Vercel Edge function, then streams the response back to the application.
+### Original
+
+This project uses the OpenAI GPT-3 API (specifically, text-davinci-003) and Vercel Edge functions with streaming. 
+It generates 5 cinema recommendations based on the form and user input, sends it to the GPT-3 API via a Vercel Edge function, 
+then streams the response back to the application.
+
+### Additions
+
+First, we added a database to allow users to upload movie titles that they own. 
+When they do that, we check if the movie is already in the database. If it is we can skip the remaining steps.
+If it is not we use the OMDB API to get all kinds of movie details.
+We then generate embeddings for those details using OpenAI's text-embedding-ada-002 model.
+We then store the title, details and embeddings in the database.
+
+Then we implemented a chat interface to allow users to get recommendations about their movies.
+We use the same embedding model to generate embeddings for the user's input.
+We then use cosine similarity to find the movies in the database that are most similar to the user's input.
+We also use the YouTube API to get the trailer for the movie.
+Then we use the gpt-3.5-turbo model to generate a response to the user's input using the details of the .
 
 # Running Locally
 
-After cloning the repo, go to OpenAI to make an account and put your API key in a file called `.env`.
+First, install the dependencies:
 
-For example:
+`pnpm i`
 
-`OPENAI_API_KEY=...`
+Start the local database docker container (make sure docker is running):
 
-Then, run the application in the command line and it will be available at http://localhost:5173.
+`supabase start`
 
-`npm run dev`
+This will start the database and do all necessary migrations and seeding.
+If you want to inspect the database the dashboard is available at http://localhost:54323.
 
-# Deploy Instantly on Vercel
+Then, create a `.env` file and copy the contents of `.env.example` into it.
+Add all missing values.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FStephDietz%2Fwatch-this&env=VITE_OPENAI_API_KEY&envDescription=Open%20AI%20API%20key&demo-title=watchthis.dev&demo-url=https%3A%2F%2Fwatchthis.dev)
+Then, run the following command and it will be available at http://localhost:5173.
+
+`pnpm run dev`
